@@ -19,7 +19,7 @@ import time
 from datetime import datetime
 
 from tensorflowonspark import TFCluster
-import mnist_dist
+import mnist_dist2
 
 sc = SparkContext(conf=SparkConf().setAppName("mnist_spark"))
 executors = sc._conf.get("spark.executor.instances")
@@ -46,33 +46,33 @@ print("args:",args)
 print("{0} ===== Start".format(datetime.now().isoformat()))
 
 if args.format == "tfr":
-	images = sc.newAPIHadoopFile(args.images, "org.tensorflow.hadoop.io.TFRecordFileInputFormat",
-							keyClass="org.apache.hadoop.io.BytesWritable",
-							valueClass="org.apache.hadoop.io.NullWritable")
-	def toNumpy(bytestr):
-		example = tf.train.Example()
-		example.ParseFromString(bytestr)
-		features = example.features.feature
-		image = numpy.array(features['image'].int64_list.value)
-		label = numpy.array(features['label'].int64_list.value)
-		return (image, label)
-	dataRDD = images.map(lambda x: toNumpy(str(x[0])))
+  images = sc.newAPIHadoopFile(args.images, "org.tensorflow.hadoop.io.TFRecordFileInputFormat",
+                              keyClass="org.apache.hadoop.io.BytesWritable",
+                              valueClass="org.apache.hadoop.io.NullWritable")
+  def toNumpy(bytestr):
+    example = tf.train.Example()
+    example.ParseFromString(bytestr)
+    features = example.features.feature
+    image = numpy.array(features['image'].int64_list.value)
+    label = numpy.array(features['label'].int64_list.value)
+    return (image, label)
+  dataRDD = images.map(lambda x: toNumpy(str(x[0])))
 else:
-	if args.format == "csv":
-		images = sc.textFile(args.images).map(lambda ln: [int(x) for x in ln.split(',')])
-		labels = sc.textFile(args.labels).map(lambda ln: [float(x) for x in ln.split(',')])
-	else: # args.format == "pickle":
-		images = sc.pickleFile(args.images)
-		labels = sc.pickleFile(args.labels)
-	print("zipping images and labels")
-	dataRDD = images.zip(labels)
+  if args.format == "csv":
+    images = sc.textFile(args.images).map(lambda ln: [int(x) for x in ln.split(',')])
+    labels = sc.textFile(args.labels).map(lambda ln: [float(x) for x in ln.split(',')])
+  else: # args.format == "pickle":
+    images = sc.pickleFile(args.images)
+    labels = sc.pickleFile(args.labels)
+  print("zipping images and labels")
+  dataRDD = images.zip(labels)
 
-cluster = TFCluster.run(sc, mnist_dist.map_fun, args, args.cluster_size, num_ps, args.tensorboard, TFCluster.InputMode.SPARK)
+cluster = TFCluster.run(sc, mnist_dist2.map_fun, args, args.cluster_size, num_ps, args.tensorboard, TFCluster.InputMode.SPARK)
 if args.mode == "train":
-	cluster.train(dataRDD, args.epochs)
+  cluster.train(dataRDD, args.epochs)
 else:
-	labelRDD = cluster.inference(dataRDD)
-	labelRDD.saveAsTextFile(args.output)
+  labelRDD = cluster.inference(dataRDD)
+  labelRDD.saveAsTextFile(args.output)
 cluster.shutdown()
 
 print("{0} ===== Stop".format(datetime.now().isoformat()))
