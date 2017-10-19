@@ -166,6 +166,7 @@ def map_fun(args, ctx):
 
 						if sv.is_chief:
 							summary_writer.add_summary(summary, step)
+							
 					else: # args.mode == "inference"
 						labels, preds, acc = sess.run([label, prediction, accuracy], feed_dict=feed)
 
