@@ -37,6 +37,17 @@ def map_fun(args, ctx):
 
 	# Get TF cluster and server instances
 	cluster, server = TFNode.start_cluster_server(ctx, 1, args.rdma)
+	
+	def writeFileToHDFS():
+		rootdir = '/tmp/mnist_model'
+		client = HdfsClient(hosts='localhost:50070')
+		client.mkdirs('/user/root/mnist_model')
+		for parent,dirnames,filenames in os.walk(rootdir):
+			for dirname in  dirnames:
+				print("parent is:{0}".format(parent))
+		for filename in filenames:
+			client.copy_from_local(os.path.join(parent,filename), os.path.join('/user/root/mnist_model',filename), overwrite=True)
+
 
 	def feed_dict(batch):
 		# Convert from [(images, labels)] to two numpy arrays of the proper type
@@ -106,7 +117,8 @@ def map_fun(args, ctx):
 			init_op = tf.global_variables_initializer()
 
 		# Create a "supervisor", which oversees the training process and stores model state into HDFS
-		logdir = TFNode.hdfs_path(ctx, args.model)
+#		logdir = TFNode.hdfs_path(ctx, args.model)
+		logdir = "/tmp/" + args.model
 		print("tensorflow model path: {0}".format(logdir))
 		summary_writer = tf.summary.FileWriter("tensorboard_%d" %(worker_num), graph=tf.get_default_graph())
 
@@ -163,6 +175,7 @@ def map_fun(args, ctx):
 
 			if sv.should_stop() or step >= args.steps:
 				tf_feed.terminate()
+				writeFileToHDFS()
 
 		# Ask for all the services to stop.
 		print("{0} stopping supervisor".format(datetime.now().isoformat()))
