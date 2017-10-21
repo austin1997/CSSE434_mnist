@@ -67,12 +67,14 @@ else:
 	print("zipping images and labels")
 	dataRDD = images.zip(labels)
 
-cluster = TFCluster.run(sc, mnist_dist.map_fun, args, args.cluster_size, num_ps, args.tensorboard, TFCluster.InputMode.SPARK)
+cluster = TFCluster.run(sc, mnist_dist.map_fun, args, args.cluster_size, num_ps, args.tensorboard, TFCluster.InputMode.TENSORFLOW)
+'''
 if args.mode == "train":
 	cluster.train(dataRDD, args.epochs)
 else:
 	labelRDD = cluster.inference(dataRDD)
 	labelRDD.saveAsTextFile(args.output)
+'''
 cluster.shutdown()
 
 print("{0} ===== Stop".format(datetime.now().isoformat()))
