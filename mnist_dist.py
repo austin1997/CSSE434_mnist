@@ -118,7 +118,7 @@ def map_fun(args, ctx):
 
 		# Create a "supervisor", which oversees the training process and stores model state into HDFS
 #		logdir = TFNode.hdfs_path(ctx, args.model)
-		logdir = "/tmp/" + args.model
+		logdir = "hdfs:///tmp/" + args.model
 		print("tensorflow model path: {0}".format(logdir))
 		summary_writer = tf.summary.FileWriter("tensorboard_%d" %(worker_num), graph=tf.get_default_graph())
 
