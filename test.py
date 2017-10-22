@@ -40,7 +40,9 @@ if __name__ == '__main__':
   parser.add_argument("--tensorboard", help="launch tensorboard process", action="store_true")
   
   sc = SparkContext(conf=SparkConf().setAppName("your_app_name"))
-  num_executors = int(sc._conf.get("spark.executor.instances"))
+  #num_executors = int(sc._conf.get("spark.executor.instances"))
+  executors = sc._conf.get("spark.executor.instances")
+  num_executors = int(executors) if executors is not None else 1
   num_ps = 1
   tensorboard = True
 
