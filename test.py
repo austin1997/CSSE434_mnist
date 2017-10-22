@@ -12,7 +12,7 @@ from com.yahoo.ml.tf import TFCluster, TFNode
 from datetime import datetime
 
 
-def main_fun(argv, ctx)
+def main_fun(argv, ctx):
   import tensorflow as tf
   worker_num = ctx.worker_num
   job_name = ctx.job_name
