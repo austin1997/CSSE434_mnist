@@ -19,8 +19,7 @@ def main_fun(argv, ctx):
   task_index = ctx.task_index
   
   cluster_spec, server = TFNode.start_cluster_server(ctx)
-  
-'''  if job_name == "ps":
+  '''  if job_name == "ps":
     time.sleep((worker_num + 1) * 5)
 	
   if job_name == "ps":
