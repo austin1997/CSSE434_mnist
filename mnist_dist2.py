@@ -62,48 +62,117 @@ def map_fun(args, ctx):
         worker_device="/job:worker/task:%d" % task_index,
         cluster=cluster)):
 
-      # Variables of the hidden layer
-      hid_w = tf.Variable(tf.truncated_normal([IMAGE_PIXELS * IMAGE_PIXELS, hidden_units],
-                              stddev=1.0 / IMAGE_PIXELS), name="hid_w")
-      hid_b = tf.Variable(tf.zeros([hidden_units]), name="hid_b")
-      tf.summary.histogram("hidden_weights", hid_w)
+      print("In a TFCluster.")
 
-      # Variables of the softmax layer
-      sm_w = tf.Variable(tf.truncated_normal([hidden_units, 10],
-                              stddev=1.0 / math.sqrt(hidden_units)), name="sm_w")
-      sm_b = tf.Variable(tf.zeros([10]), name="sm_b")
-      tf.summary.histogram("softmax_weights", sm_w)
+      # Input placeholders
+      with tf.name_scope('input'):
+        x = tf.placeholder(tf.float32, [None, 784], name='x-input')
+        y_ = tf.placeholder(tf.float32, [None, 10], name='y-input') 
+      
+      with tf.name_scope('input_reshape'):
+        image_shaped_input = tf.reshape(x, [-1, 28, 28, 1])
+        tf.summary.image('input', image_shaped_input, 10)	
 
-      # Placeholders or QueueRunner/Readers for input data
-      x = tf.placeholder(tf.float32, [None, IMAGE_PIXELS * IMAGE_PIXELS], name="x")
-      y_ = tf.placeholder(tf.float32, [None, 10], name="y_")
+      # We can't initialize these variables to 0 - the network will get stuck.
+      def weight_variable(shape):
+        """Create a weight variable with appropriate initialization."""
+        initial = tf.truncated_normal(shape, stddev=0.1)
+        return tf.Variable(initial)
 
-      x_img = tf.reshape(x, [-1, IMAGE_PIXELS, IMAGE_PIXELS, 1])
-      tf.summary.image("x_img", x_img)
+      def bias_variable(shape):
+        """Create a bias variable with appropriate initialization."""
+        initial = tf.constant(0.1, shape=shape)
+        return tf.Variable(initial)
 
-      hid_lin = tf.nn.xw_plus_b(x, hid_w, hid_b)
-      hid = tf.nn.relu(hid_lin)
+      def variable_summaries(var):
+        """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
+        with tf.name_scope('summaries'):
+          mean = tf.reduce_mean(var)
+          tf.summary.scalar('mean', mean)
+          with tf.name_scope('stddev'):
+            stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+          tf.summary.scalar('stddev', stddev)
+          tf.summary.scalar('max', tf.reduce_max(var))
+          tf.summary.scalar('min', tf.reduce_min(var))
+          tf.summary.histogram('histogram', var)	
 
-      y = tf.nn.softmax(tf.nn.xw_plus_b(hid, sm_w, sm_b))
+      def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
+        """Reusable code for making a simple neural net layer.
+        It does a matrix multiply, bias add, and then uses ReLU to nonlinearize.
+        It also sets up name scoping so that the resultant graph is easy to read,
+        and adds a number of summary ops.
+        """
+        # Adding a name scope ensures logical grouping of the layers in the graph.
+        with tf.name_scope(layer_name):
+          # This Variable will hold the state of the weights for the layer
+          with tf.name_scope('weights'):
+            weights = weight_variable([input_dim, output_dim])
+            variable_summaries(weights)
+          with tf.name_scope('biases'):
+            biases = bias_variable([output_dim])
+            variable_summaries(biases)
+          with tf.name_scope('Wx_plus_b'):
+            preactivate = tf.matmul(input_tensor, weights) + biases
+            tf.summary.histogram('pre_activations', preactivate)
+          activations = act(preactivate, name='activation')
+          tf.summary.histogram('activations', activations)
+          return activations
+
+      hidden1 = nn_layer(x, 784, 500, 'layer1')
+	  
+	  with tf.name_scope('dropout'):
+        keep_prob = tf.placeholder(tf.float32)
+        tf.summary.scalar('dropout_keep_probability', keep_prob)
+        dropped = tf.nn.dropout(hidden1, keep_prob)
+
+      # Do not apply softmax activation yet, see below.
+      y = nn_layer(dropped, 500, 10, 'layer2', act=tf.identity)
+
+      with tf.name_scope('cross_entropy'):
+        # The raw formulation of cross-entropy,
+        #
+        # tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(tf.softmax(y)),
+        #                               reduction_indices=[1]))
+        #
+        # can be numerically unstable.
+        #
+        # So here we use tf.nn.softmax_cross_entropy_with_logits on the
+        # raw outputs of the nn_layer above, and then average across
+        # the batch.
+        diff = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y)
+        with tf.name_scope('total'):
+          cross_entropy = tf.reduce_mean(diff)
+
+      tf.summary.scalar('cross_entropy', cross_entropy)
+	  
+      with tf.name_scope('train'):
+        train_step = tf.train.AdamOptimizer(FLAGS.learning_rate).minimize(
+                cross_entropy)
+	  
+      with tf.name_scope('accuracy'):
+        with tf.name_scope('correct_prediction'):
+          correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+        with tf.name_scope('accuracy'):
+          accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+      tf.summary.scalar('accuracy', accuracy)
+
+      # Merge all the summaries and write them out to
+      # /tmp/tensorflow/mnist/logs/mnist_with_summaries (by default)
+      merged = tf.summary.merge_all()
+	  
+	  
+
+
+      
 
       global_step = tf.Variable(0)
 
-      loss = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(y, 1e-10, 1.0)))
-      tf.summary.scalar("loss", loss)
 
-      train_op = tf.train.AdagradOptimizer(0.01).minimize(
-          loss, global_step=global_step)
 
-      # Test trained model
-      label = tf.argmax(y_, 1, name="label")
-      prediction = tf.argmax(y, 1,name="prediction")
-      correct_prediction = tf.equal(prediction, label)
 
-      accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name="accuracy")
-      tf.summary.scalar("acc", accuracy)
+
 
       saver = tf.train.Saver()
-      summary_op = tf.summary.merge_all()
       init_op = tf.global_variables_initializer()
 
     # Create a "supervisor", which oversees the training process and stores model state into HDFS
@@ -119,6 +188,7 @@ def map_fun(args, ctx):
                                summary_op=None,
                                saver=saver,
                                global_step=global_step,
+							   summary_writer=summary_writer,
                                stop_grace_secs=300,
                                save_model_secs=10)
     else:
@@ -149,7 +219,7 @@ def map_fun(args, ctx):
 
         if len(batch_xs) > 0:
           if args.mode == "train":
-            _, summary, step = sess.run([train_op, summary_op, global_step], feed_dict=feed)
+            summary, _, step = sess.run([merged, train_step, global_step], feed_dict=feed)
             # print accuracy and save model checkpoint to HDFS every 100 steps
             if (step % 100 == 0):
               print("{0} step: {1} accuracy: {2}".format(datetime.now().isoformat(), step, sess.run(accuracy,{x: batch_xs, y_: batch_ys})))
