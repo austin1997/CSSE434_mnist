@@ -50,7 +50,7 @@ def map_fun(args, ctx):
     xs = xs.astype(numpy.float32)
     xs = xs/255.0
     ys = numpy.array(labels)
-    ys = ys.astype(numpy.float32)
+    ys = ys.astype(numpy.uint8)
     return (xs, ys)
 
   if job_name == "ps":
@@ -214,14 +214,14 @@ def map_fun(args, ctx):
 
         # using feed_dict
         batch_xs, batch_ys = feed_dict(tf_feed.next_batch(batch_size))
-        feed = {x: batch_xs, y_: batch_ys}
+        feed = {x: batch_xs, y_: batch_ys, keep_prob: 0.9}
 
         if len(batch_xs) > 0:
           if args.mode == "train":
             summary, _, step = sess.run([merged, train_step, global_step], feed_dict=feed)
             # print accuracy and save model checkpoint to HDFS every 100 steps
             if (step % 100 == 0):
-              print("{0} step: {1} accuracy: {2}".format(datetime.now().isoformat(), step, sess.run(accuracy,{x: batch_xs, y_: batch_ys})))
+              print("{0} step: {1} accuracy: {2}".format(datetime.now().isoformat(), step, sess.run(accuracy,{x: batch_xs, y_: batch_ys, keep_prob: 1.0})))
 
             if sv.is_chief:
               summary_writer.add_summary(summary, step)
