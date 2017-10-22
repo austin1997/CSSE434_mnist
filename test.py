@@ -8,7 +8,9 @@ import sys
 
 from pyspark.context import SparkContext
 from pyspark.conf import SparkConf
-from com.yahoo.ml.tf import TFCluster, TFNode
+from tensorflowonspark import TFCluster
+from tensorflowonspark import TFNode
+#from com.yahoo.ml.tf import TFCluster, TFNode
 from datetime import datetime
 
 
