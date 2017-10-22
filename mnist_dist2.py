@@ -50,7 +50,7 @@ def map_fun(args, ctx):
     xs = xs.astype(numpy.float32)
     xs = xs/255.0
     ys = numpy.array(labels)
-    ys = ys.astype(numpy.uint8)
+    ys = ys.astype(numpy.float32)
     return (xs, ys)
 
   if job_name == "ps":
