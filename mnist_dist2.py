@@ -172,7 +172,7 @@ def map_fun(args, ctx):
 
 
 
-      saver = tf.train.Saver()
+#      saver = tf.train.Saver()
       init_op = tf.global_variables_initializer()
 
     # Create a "supervisor", which oversees the training process and stores model state into HDFS
@@ -186,7 +186,6 @@ def map_fun(args, ctx):
                                logdir=logdir,
                                init_op=init_op,
                                summary_op=None,
-                               saver=saver,
                                global_step=global_step,
                                stop_grace_secs=300,
                                save_model_secs=10)
