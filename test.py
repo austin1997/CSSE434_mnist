@@ -42,7 +42,7 @@ if __name__ == '__main__':
   sc = SparkContext(conf=SparkConf().setAppName("your_app_name"))
   #num_executors = int(sc._conf.get("spark.executor.instances"))
   executors = sc._conf.get("spark.executor.instances")
-  num_executors = int(executors) if executors is not None else 1
+  num_executors = int(executors) if executors is not None else 2
   num_ps = 1
   tensorboard = True
 
