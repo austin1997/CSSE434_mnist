@@ -146,7 +146,7 @@ def map_fun(args, ctx):
       tf.summary.scalar('cross_entropy', cross_entropy)
 	  
       with tf.name_scope('train'):
-        train_step = tf.train.AdamOptimizer(FLAGS.learning_rate).minimize(
+        train_step = tf.train.AdamOptimizer(0.001).minimize(
                 cross_entropy)
 	  
       with tf.name_scope('accuracy'):
