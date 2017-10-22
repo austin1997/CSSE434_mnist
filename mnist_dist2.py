@@ -120,7 +120,7 @@ def map_fun(args, ctx):
 
       hidden1 = nn_layer(x, 784, 500, 'layer1')
 	  
-	  with tf.name_scope('dropout'):
+      with tf.name_scope('dropout'):
         keep_prob = tf.placeholder(tf.float32)
         tf.summary.scalar('dropout_keep_probability', keep_prob)
         dropped = tf.nn.dropout(hidden1, keep_prob)
