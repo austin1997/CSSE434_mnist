@@ -58,7 +58,6 @@ if __name__ == '__main__':
                            'tensorflow/mnist/logs/mnist_with_summaries'),
       help='Summaries log directory')
   args, rem = parser.parse_known_args()'''
-
   sc = SparkContext(conf=SparkConf().setAppName("your_app_name"))
   num_executors = int(sc._conf.get("spark.executor.instances"))
   num_ps = 1
