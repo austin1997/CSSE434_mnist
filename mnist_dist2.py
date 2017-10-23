@@ -155,6 +155,8 @@ def map_fun(args, ctx):
         with tf.name_scope('accuracy'):
           accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
       tf.summary.scalar('accuracy', accuracy)
+      label = tf.argmax(y_, 1, name="label")
+      prediction = tf.argmax(y, 1,name="prediction")  
 
       # Merge all the summaries and write them out to
       # /tmp/tensorflow/mnist/logs/mnist_with_summaries (by default)
@@ -211,7 +213,7 @@ def map_fun(args, ctx):
         # Run a training step asynchronously.
         # See `tf.train.SyncReplicasOptimizer` for additional details on how to
         # perform *synchronous* training.
-
+        step = step + 1
         # using feed_dict
         batch_xs, batch_ys = feed_dict(tf_feed.next_batch(batch_size))
         feed = {x: batch_xs, y_: batch_ys, keep_prob: 0.9}
@@ -221,7 +223,10 @@ def map_fun(args, ctx):
             summary, _, step = sess.run([merged, train_step, global_step], feed_dict=feed)
             # print accuracy and save model checkpoint to HDFS every 100 steps
             if (step % 100 == 0):
-              print("{0} step: {1} accuracy: {2}".format(datetime.now().isoformat(), step, sess.run(accuracy,{x: batch_xs, y_: batch_ys, keep_prob: 1.0})))
+              labels, preds, acc = sess.run([label, prediction, accuracy], feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 1.0})
+              print("{0} step: {1} accuracy: {2}, Label: {3}, Prediction: {4}".format(datetime.now().isoformat(), step, acc, labels, preds))
+#              results = ["{0} Label: {1}, Prediction: {2}".format(datetime.now().isoformat(), l, p) for l,p in zip(labels,preds)]
+#              tf_feed.batch_results(results)
 
             if sv.is_chief:
               summary_writer.add_summary(summary, step)
