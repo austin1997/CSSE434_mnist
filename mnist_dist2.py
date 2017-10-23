@@ -220,13 +220,13 @@ def map_fun(args, ctx):
 
         if len(batch_xs) > 0:
           if args.mode == "train":
-            summary, _, step = sess.run([merged, train_step, global_step], feed_dict=feed)
+            summary, _, _ = sess.run([merged, train_step, global_step], feed_dict=feed)
             # print accuracy and save model checkpoint to HDFS every 100 steps
             if (step % 100 == 0):
               labels, preds, acc = sess.run([label, prediction, accuracy], feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 1.0})
-              print("{0} step: {1} accuracy: {2}".format(datetime.now().isoformat(), step, acc))
-              results = ["{0} Label: {1}, Prediction: {2}".format(datetime.now().isoformat(), l, p) for l,p in zip(labels,preds)]
-              tf_feed.batch_results(results)
+              print("{0} step: {1} accuracy: {2}, Label: {3}, Prediction: {4}".format(datetime.now().isoformat(), step, acc, l, p) for l,p in zip(labels,preds))
+#              results = ["{0} Label: {1}, Prediction: {2}".format(datetime.now().isoformat(), l, p) for l,p in zip(labels,preds)]
+#              tf_feed.batch_results(results)
 
             if sv.is_chief:
               summary_writer.add_summary(summary, step)
