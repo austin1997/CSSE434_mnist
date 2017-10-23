@@ -186,7 +186,7 @@ def map_fun(args, ctx):
                                logdir=logdir,
                                init_op=init_op,
                                summary_op=None,
-                               summary_writer=summary_writer,
+#                               summary_writer=summary_writer,
                                global_step=global_step,
                                stop_grace_secs=300,
                                save_model_secs=10)
