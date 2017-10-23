@@ -191,7 +191,8 @@ def map_fun(args, ctx):
 #                               summary_writer=summary_writer,
                                global_step=global_step,
                                stop_grace_secs=300,
-                               save_model_secs=10)
+#                               save_model_secs=10
+                               )
     else:
       sv = tf.train.Supervisor(is_chief=(task_index == 0),
                                logdir=logdir,
