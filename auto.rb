@@ -88,7 +88,7 @@ elsif dataset == 'cifar10'
 	--labels cifar10/csv/train/labels \
 	--mode train \
 	--model cifar10_model \
-	--epochs 1200 \
+	--epochs #{epochs} \
 	--steps 50000`
 	
 elsif dataset=='cifar100'
@@ -120,7 +120,7 @@ elsif dataset=='cifar100'
 	--labels cifar10/csv/train/labels \
 	--mode train \
 	--model cifar10_model \
-	--epochs 120 \
+	--epochs #{epochs} \
 	--steps 10000`
 end
 		

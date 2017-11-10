@@ -208,7 +208,7 @@ def map_fun(args, ctx):
       print("{0} session ready".format(datetime.now().isoformat()))
 
       # Loop until the supervisor shuts down or 1000000 steps have completed.
-      step = 0
+      step = -1
       tf_feed = TFNode.DataFeed(ctx.mgr, args.mode == "train")
       while not sv.should_stop() and not tf_feed.should_stop() and step < args.steps:
         # Run a training step asynchronously.
