@@ -28,6 +28,7 @@ raise "You must specify Number of executors (-n)" if num_executors.nil?
 
 if dataset == 'mnist' 
 	if download == 'true'
+		puts 'downloading'
 		`rm *.gz`
 		`curl -O "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"`
 		`curl -O "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"`
