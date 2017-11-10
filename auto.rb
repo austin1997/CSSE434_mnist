@@ -5,7 +5,7 @@ require 'optparse'
 dataset = nil
 epochs = nil
 download = nil
-num-executors = nil
+num_executors = nil
 
 OptionParser.new do |opts|
   opts.on("-d dataset", "--dataset dataset", "Target dataset") do |val|
@@ -18,13 +18,13 @@ OptionParser.new do |opts|
     download = val
   end
   opts.on("-n num-executors", "--num-executors num-executors", "Number of executors") do |val|
-	num-executors = val
+	num_executors = val
   end
 end.parse(ARGV)
 raise "You must specify a target dataset (-i)" if dataset.nil?
 raise "You must specify the number of epochs (-o)" if epochs.nil?
 raise "You must specify if to download the dataset (-dl)" if download.nil?
-raise "You must specify Number of executors (-n)" if num-executors.nil?
+raise "You must specify Number of executors (-n)" if num_executors.nil?
 
 if dataset == 'mnist' 
 	if download == 'true'
@@ -40,7 +40,7 @@ if dataset == 'mnist'
 	--master yarn \
 	--deploy-mode cluster \
 	--queue default \
-	--num-executors #{num-executors} \
+	--num-executors #{num_executors} \
 	--archives mnist.zip#mnist \
 	mnist_data_setup.py \
 	--output mnist/csv \
@@ -50,7 +50,7 @@ if dataset == 'mnist'
 	--master yarn \
 	--deploy-mode cluster \
 	--queue default \
-	--num-executors #{num-executors} \
+	--num-executors #{num_executors} \
 	--py-files mnist_dist2.py \
 	--conf spark.dynamicAllocation.enabled=false \
 	--conf spark.yarn.maxAppAttempts=1 \
@@ -69,7 +69,7 @@ elsif dataset == 'cifar10'
 	--master yarn \
 	--deploy-mode cluster \
 	--queue default \
-	--num-executors #{num-executors} \
+	--num-executors #{num_executors} \
 	--archives cifar-10-python.tar.gz#dataset \
 	cifar10_data_setup.py \
 	--output mnist/csv \
@@ -78,7 +78,7 @@ elsif dataset == 'cifar10'
 	`spark-submit --master yarn \
 	--deploy-mode cluster \
 	--queue default \
-	--num-executors #{num-executors} \
+	--num-executors #{num_executors} \
 	--py-files cifar10.zip \
 	--conf spark.dynamicAllocation.enabled=false \
 	--conf spark.yarn.maxAppAttempts=1 \
@@ -101,7 +101,7 @@ elsif dataset=='cifar100'
 	--master yarn \
 	--deploy-mode cluster \
 	--queue default \
-	--num-executors #{num-executors} \
+	--num-executors #{num_executors} \
 	--archives cifar-100-python.tar.gz#dataset \
 	cifar10_data_setup.py \
 	--output mnist/csv \
@@ -110,7 +110,7 @@ elsif dataset=='cifar100'
 	`spark-submit --master yarn \
 	--deploy-mode cluster \
 	--queue default \
-	--num-executors #{num-executors} \
+	--num-executors #{num_executors} \
 	--py-files cifar100_spark2.py \
 	--conf spark.dynamicAllocation.enabled=false \
 	--conf spark.yarn.maxAppAttempts=1 \
